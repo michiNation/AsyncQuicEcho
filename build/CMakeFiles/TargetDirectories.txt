@@ -1,0 +1,3 @@
+/home/michael/cppCode/EventbaseTest/build/CMakeFiles/rebuild_cache.dir
+/home/michael/cppCode/EventbaseTest/build/CMakeFiles/edit_cache.dir
+/home/michael/cppCode/EventbaseTest/build/CMakeFiles/Eventbase.dir

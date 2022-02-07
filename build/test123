@@ -1,0 +1,4 @@
+Start of Testrun: testrun1 at UTC
+1644065987386;TCP;send;0;hellosend
+1644065987386;TCP;receive;9;hellosend
+File Closed
