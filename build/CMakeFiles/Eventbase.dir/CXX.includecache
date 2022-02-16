@@ -24,13 +24,31 @@ quic/samples/echo/LogQuicStats.h
 folly/io/async/ScopedEventBaseThread.h
 -
 
+../inc/LogQuicStats.h
+glog/logging.h
+-
+quic/codec/Types.h
+-
+quic/state/QuicTransportStatsCallback.h
+-
+quic/QuicConstants.h
+../inc/quic/QuicConstants.h
+quic/QuicException.h
+../inc/quic/QuicException.h
+
 ../inc/StopWatch.h
 chrono
 -
 fstream
 -
 
-/home/michael/cppCode/EventbaseTest/src/main.cpp
+/home/michael/cppCode/AsyncQuicEcho/src/Client.cpp
+Client.h
+/home/michael/cppCode/AsyncQuicEcho/src/Client.h
+LogQuicStats.h
+/home/michael/cppCode/AsyncQuicEcho/src/LogQuicStats.h
+
+/home/michael/cppCode/AsyncQuicEcho/src/main.cpp
 stdio.h
 -
 iostream
@@ -52,9 +70,9 @@ folly/init/Init.h
 folly/portability/GFlags.h
 -
 StopWatch.h
-/home/michael/cppCode/EventbaseTest/src/StopWatch.h
+/home/michael/cppCode/AsyncQuicEcho/src/StopWatch.h
 Client.h
-/home/michael/cppCode/EventbaseTest/src/Client.h
+/home/michael/cppCode/AsyncQuicEcho/src/Client.h
 
 /home/michael/quic/mvfst/_build/deps/include/fizz/client/ClientExtensions.h
 fizz/record/Types.h
@@ -4020,6 +4038,10 @@ folly/ssl/OpenSSLLockTypes.h
 
 /home/michael/quic/mvfst/_build/deps/include/folly/ssl/OpenSSLCertUtils.h
 chrono
+-
+map
+-
+set
 -
 string
 -

@@ -4,8 +4,8 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/michael/cppCode/EventbaseTest/src/Client.cpp" "/home/michael/cppCode/EventbaseTest/build/CMakeFiles/Eventbase.dir/src/Client.cpp.o"
-  "/home/michael/cppCode/EventbaseTest/src/main.cpp" "/home/michael/cppCode/EventbaseTest/build/CMakeFiles/Eventbase.dir/src/main.cpp.o"
+  "/home/michael/cppCode/AsyncQuicEcho/src/Client.cpp" "/home/michael/cppCode/AsyncQuicEcho/build/CMakeFiles/Eventbase.dir/src/Client.cpp.o"
+  "/home/michael/cppCode/AsyncQuicEcho/src/main.cpp" "/home/michael/cppCode/AsyncQuicEcho/build/CMakeFiles/Eventbase.dir/src/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

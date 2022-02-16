@@ -103,7 +103,7 @@ set(LIBS
             /usr/lib/x86_64-linux-gnu/libsnappy.so 
             /usr/lib/x86_64-linux-gnu/libiberty.a 
             /usr/lib/x86_64-linux-gnu/libsodium.so 
-            /usr/lib/x86_64-linux-gnu/libunwind.so 
+            /usr/lib/x86_64-linux-gnu/libunwind.so.8 
             /usr/lib/x86_64-linux-gnu/libdouble-conversion.so 
             /usr/lib/x86_64-linux-gnu/libglog.so 
             /usr/lib/x86_64-linux-gnu/libssl.so 

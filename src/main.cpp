@@ -13,29 +13,11 @@
 
 int main(int argc, char* argv[]){
 
-    //test
-    StopWatch sw;
-    sw.CreateFile("test123", "testrun1");
-//CreateLogEntry(std::string protocol, bool isSend, std::string message, Timepoint start, Timepoint end){
-    sw.Start();
-    sw.CreateLogEntry("TCP", true, "hellosend");
-    for(int i = 0; i < 10; i++){
-        
-    }
-    sw.Stop();
-    sw.CreateLogEntry("TCP", false, "hellosend");
-
-    sw.CloseFile();
-
-
-    return 0;
-
-
    google::InitGoogleLogging("MAIN");
    google::SetCommandLineOptionWithMode("logtostderr", "1", gflags::SET_FLAGS_DEFAULT);
    
 
-  //  folly::Init init(&argc, &argv);
+  //folly::Init init(&argc, &argv);
     fizz::CryptoUtils::init();
     
     
