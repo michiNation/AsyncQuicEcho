@@ -14,6 +14,12 @@
 # EXTERNAL cache entries
 ########################
 
+//Value Computed by CMake
+AsyncQuic_BINARY_DIR:STATIC=/home/michael/cppCode/AsyncQuicEcho/build
+
+//Value Computed by CMake
+AsyncQuic_SOURCE_DIR:STATIC=/home/michael/cppCode/AsyncQuicEcho
+
 Boost_CONTEXT_LIBRARY_RELEASE:STRING=/usr/lib/x86_64-linux-gnu/libboost_context.so.1.71.0
 
 Boost_DATE_TIME_LIBRARY_RELEASE:STRING=/usr/lib/x86_64-linux-gnu/libboost_date_time.so.1.71.0
@@ -167,7 +173,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=Eventbase
+CMAKE_PROJECT_NAME:STATIC=AsyncQuic
 
 //Value Computed by CMake
 CMAKE_PROJECT_VERSION:STATIC=1.0
@@ -245,12 +251,6 @@ CMAKE_STRIP:FILEPATH=/usr/bin/strip
 // during the make.  This is useful for debugging only. With Visual
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
-
-//Value Computed by CMake
-Eventbase_BINARY_DIR:STATIC=/home/michael/cppCode/AsyncQuicEcho/build
-
-//Value Computed by CMake
-Eventbase_SOURCE_DIR:STATIC=/home/michael/cppCode/AsyncQuicEcho
 
 //The directory containing a CMake configuration file for Fizz.
 Fizz_DIR:PATH=/home/michael/quic/mvfst/_build/deps/lib/cmake/fizz

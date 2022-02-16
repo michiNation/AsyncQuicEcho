@@ -53,7 +53,7 @@ CMAKE_BINARY_DIR = /home/michael/cppCode/AsyncQuicEcho/build
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/Eventbase.dir/all
+all: CMakeFiles/AsyncQuic.dir/all
 
 .PHONY : all
 
@@ -63,36 +63,36 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/Eventbase.dir/clean
+clean: CMakeFiles/AsyncQuic.dir/clean
 
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/Eventbase.dir
+# Target rules for target CMakeFiles/AsyncQuic.dir
 
 # All Build rule for target.
-CMakeFiles/Eventbase.dir/all:
-	$(MAKE) -f CMakeFiles/Eventbase.dir/build.make CMakeFiles/Eventbase.dir/depend
-	$(MAKE) -f CMakeFiles/Eventbase.dir/build.make CMakeFiles/Eventbase.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/michael/cppCode/AsyncQuicEcho/build/CMakeFiles --progress-num=1,2,3 "Built target Eventbase"
-.PHONY : CMakeFiles/Eventbase.dir/all
+CMakeFiles/AsyncQuic.dir/all:
+	$(MAKE) -f CMakeFiles/AsyncQuic.dir/build.make CMakeFiles/AsyncQuic.dir/depend
+	$(MAKE) -f CMakeFiles/AsyncQuic.dir/build.make CMakeFiles/AsyncQuic.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/michael/cppCode/AsyncQuicEcho/build/CMakeFiles --progress-num=1,2,3,4 "Built target AsyncQuic"
+.PHONY : CMakeFiles/AsyncQuic.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/Eventbase.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/michael/cppCode/AsyncQuicEcho/build/CMakeFiles 3
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/Eventbase.dir/all
+CMakeFiles/AsyncQuic.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/michael/cppCode/AsyncQuicEcho/build/CMakeFiles 4
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/AsyncQuic.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/michael/cppCode/AsyncQuicEcho/build/CMakeFiles 0
-.PHONY : CMakeFiles/Eventbase.dir/rule
+.PHONY : CMakeFiles/AsyncQuic.dir/rule
 
 # Convenience name for target.
-Eventbase: CMakeFiles/Eventbase.dir/rule
+AsyncQuic: CMakeFiles/AsyncQuic.dir/rule
 
-.PHONY : Eventbase
+.PHONY : AsyncQuic
 
 # clean rule for target.
-CMakeFiles/Eventbase.dir/clean:
-	$(MAKE) -f CMakeFiles/Eventbase.dir/build.make CMakeFiles/Eventbase.dir/clean
-.PHONY : CMakeFiles/Eventbase.dir/clean
+CMakeFiles/AsyncQuic.dir/clean:
+	$(MAKE) -f CMakeFiles/AsyncQuic.dir/build.make CMakeFiles/AsyncQuic.dir/clean
+.PHONY : CMakeFiles/AsyncQuic.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

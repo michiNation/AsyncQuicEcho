@@ -11,7 +11,7 @@ set(CMAKE_MODULE_PATH
 "/home/michael/quic/mvfst/_build/deps/lib/cmake/folly"
 "/home/michael/quic/mvfst/_build/deps/lib/cmake/fizz"
 )
-project(Eventbase VERSION 1.0)
+project(AsyncQuic VERSION 1.0)
 
 LINK_DIRECTORIES(
 	/usr/lib/x86_64-linux_gnu/
@@ -40,7 +40,7 @@ find_package(Fizz PATHS /home/michael/quic/mvfst/_build/deps/lib/cmake/fizz)
 find_package(gflags REQUIRED)
 find_package(Glog REQUIRED)
 
-add_executable(Eventbase src/main.cpp src/Client.cpp)
+add_executable(AsyncQuic src/main.cpp src/Client.cpp src/Server.cpp)
 
 set(LIBS  
             /home/michael/quic/mvfst/_build/deps/lib 
@@ -116,10 +116,10 @@ set(LIBS
         )
 
 #include directories HeaderFiles
-target_include_directories(Eventbase PUBLIC 
+target_include_directories(AsyncQuic PUBLIC 
                                     ${CMAKE_CURRENT_SOURCE_DIR}/inc/
                                     /home/michael/quic/mvfst/_build/deps/include/
                                     /home/michael/quic/mvfst/
                                     )
-target_link_libraries(Eventbase PUBLIC ${LIBS} ${CMAKE_DL_LIBS})
+target_link_libraries(AsyncQuic PUBLIC ${LIBS} ${CMAKE_DL_LIBS})
 

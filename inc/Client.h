@@ -7,12 +7,14 @@
 #include <quic/fizz/client/handshake/FizzClientQuicHandshakeContext.h>
 #include <quic/samples/echo/LogQuicStats.h>
 #include <folly/io/async/ScopedEventBaseThread.h>
+#include "TypesAndHelpers.h"
+
 class MyClient : public quic::QuicSocket::ConnectionCallback,
                  public quic::QuicSocket::ReadCallback,
                  public quic::QuicSocket::WriteCallback
 {
 public:
-    MyClient(const std::string &host, uint16_t port);
+    MyClient();
 
     void readAvailable(quic::StreamId streamId) noexcept override;
 
@@ -44,7 +46,7 @@ public:
         std::pair<quic::QuicErrorCode, folly::Optional<folly::StringPiece>>
             error) noexcept override;
 
-    void start();
+    void start(std::string ip, uint16_t port, TESTTYPE testtype, uint16_t loops = 10);
     std::string getString();
 
     ~MyClient() override = default;

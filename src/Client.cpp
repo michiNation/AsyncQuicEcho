@@ -1,8 +1,7 @@
 
 #include "Client.h"
 #include "LogQuicStats.h"
-MyClient::MyClient(const std::string &host, uint16_t port)
-    : mHost(host), mPort(port) {}
+MyClient::MyClient() {}
 
 void MyClient::readAvailable(quic::StreamId streamId) noexcept
 {
@@ -70,10 +69,10 @@ void MyClient::onConnectionSetupError(std::pair<quic::QuicErrorCode, std::string
     onConnectionError(std::move(error));
 }
 
-void MyClient::reConnect(){
+void MyClient::reConnect()
+{
     folly::SocketAddress addr(mHost.c_str(), mPort);
     auto evb = networkThread.getEventBase();
-
 
     evb->runInEventBaseThreadAndWait([&]
                                      {
@@ -94,8 +93,7 @@ void MyClient::reConnect(){
           
     mQuicClient->setTransportStatsCallback(
     std::make_shared<LogQuicStats>("client"));
-    mQuicClient->start(this);
-                                     });
+    mQuicClient->start(this); });
 }
 
 void MyClient::onConnectionError(std::pair<quic::QuicErrorCode, std::string> error) noexcept
@@ -103,14 +101,12 @@ void MyClient::onConnectionError(std::pair<quic::QuicErrorCode, std::string> err
     LOG(ERROR) << "EchoClient error: " << toString(error.first)
                << "; errStr=" << error.second;
 
-
     mStartDone.post();
 }
 
 void MyClient::onTransportReady() noexcept
 {
     LOG(INFO) << "Transport is ready";
-
     mStartDone.post();
 }
 
@@ -129,93 +125,6 @@ void MyClient::onStreamWriteError(
 
     LOG(ERROR) << "EchoClient write error with stream=" << id
                << " error=" << toString(error);
-}
-
-
-
-void MyClient::start()
-{
-   // folly::ScopedEventBaseThread networkThread("EchoClientThread");
-    auto evb = networkThread.getEventBase();
-    folly::SocketAddress addr(mHost.c_str(), mPort);
-
-    evb->runInEventBaseThreadAndWait([&]
-                                     {
-      auto sock = std::make_unique<folly::AsyncUDPSocket>(evb);
-      auto fizzClientContext =
-          quic::FizzClientQuicHandshakeContext::Builder()
-              .setCertificateVerifier(quic::test::createTestCertificateVerifier())
-              .build();
-              
-      mQuicClient = std::make_shared<quic::QuicClientTransport>(
-          evb, std::move(sock), std::move(fizzClientContext));
-      mQuicClient->setHostname(mHost.c_str());
-      mQuicClient->addNewPeerAddress(addr);
-      
-
-      quic::TransportSettings settings;
-      mQuicClient->setTransportSettings(settings);
-          
-      mQuicClient->setTransportStatsCallback(
-          std::make_shared<LogQuicStats>("client"));
-
-      LOG(INFO) << "EchoClient connecting to " << addr.describe();
-      
-      mQuicClient->start(this); });
-      
-    mStartDone.wait();
-
-    std::string message = "Hello";    
-
-    // loop until Ctrl+D
-    //while (std::getline(std::cin, message))
-    //{
-        if (message.empty())
-        {
-            //continue;
-        }
-        if(message.compare("stop") == 0){
-            mQuicClient->closeGracefully();
-        }
-        else if(message.compare("start") == 0){
-            reConnect();
-        }
-        else if(message.compare("switch") == 0){
-            
-
-
-        }
-        else if(message.compare("exit") == 0){
-            mQuicClient->closeGracefully();
-            //break;
-        }
-        else{
-                    evb->runInEventBaseThreadAndWait([=]
-                                         {
-                                             // create new stream for each message
-                                             auto search = appToStreamID.find(message);
-                                             quic::StreamId streamId;
-                                             if (appToStreamID.end() != search)
-                                             {
-                                                 streamId = search->second;
-                                                 LOG(INFO) << "Use old stream=" << streamId << " is bi :" << mQuicClient->isBidirectionalStream(streamId);
-                                             }
-                                             else
-                                             {
-                                                 LOG(INFO) << "Use new stream ";
-                                                 streamId = mQuicClient->createBidirectionalStream().value();
-                                                 appToStreamID[message] = streamId;
-                                                 mQuicClient->setReadCallback(streamId, this);
-                                             }
-
-                                             sendMessage2(streamId, message);
-                                         });
-
-        }
-
-    mQuicClient->closeGracefully();
-    //}
-    LOG(INFO) << "EchoClient stopping client";
 }
 
 std::string MyClient::getString()
@@ -258,8 +167,9 @@ void MyClient::sendMessage(quic::StreamId id, quic::BufQueue &data)
     }
 }
 
-void MyClient::setUpConnection(){
-       // folly::ScopedEventBaseThread networkThread("EchoClientThread");
+void MyClient::setUpConnection()
+{
+    // folly::ScopedEventBaseThread networkThread("EchoClientThread");
     auto evb = networkThread.getEventBase();
     folly::SocketAddress addr(mHost.c_str(), mPort);
 
@@ -286,4 +196,123 @@ void MyClient::setUpConnection(){
 
       LOG(INFO) << "EchoClient connecting to " << addr.describe();
       mQuicClient->start(this); });
+}
+
+void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype, uint16_t loops)
+{
+    mHost = ip;
+    mPort = port;
+    // folly::ScopedEventBaseThread networkThread("EchoClientThread");
+    auto evb = networkThread.getEventBase();
+    folly::SocketAddress addr(mHost.c_str(), mPort);
+
+    evb->runInEventBaseThreadAndWait([&]
+                                     {
+      auto sock = std::make_unique<folly::AsyncUDPSocket>(evb);
+      auto fizzClientContext =
+          quic::FizzClientQuicHandshakeContext::Builder()
+              .setCertificateVerifier(quic::test::createTestCertificateVerifier())
+              .build();
+              
+      mQuicClient = std::make_shared<quic::QuicClientTransport>(
+          evb, std::move(sock), std::move(fizzClientContext));
+      mQuicClient->setHostname(mHost.c_str());
+      mQuicClient->addNewPeerAddress(addr);
+      
+
+      quic::TransportSettings settings;
+      mQuicClient->setTransportSettings(settings);
+          
+      mQuicClient->setTransportStatsCallback(
+          std::make_shared<LogQuicStats>("client"));
+
+      LOG(INFO) << "EchoClient connecting to " << addr.describe();
+      
+      mQuicClient->start(this); });
+
+    mStartDone.wait();
+
+    switch (testtype)
+    {
+    case TESTTYPE::KEYBOARD:
+    {
+
+        std::string message = "Hello";
+
+        // loop until Ctrl+D
+        while (std::getline(std::cin, message))
+        {
+            if (message.empty())
+            {
+                // continue;
+            }
+            if (message.compare("stop") == 0)
+            {
+                mQuicClient->closeGracefully();
+            }
+            else if (message.compare("start") == 0)
+            {
+                reConnect();
+            }
+            else if (message.compare("exit") == 0)
+            {
+                mQuicClient->closeGracefully();
+                break;
+            }
+            else
+            {
+                evb->runInEventBaseThreadAndWait([=]
+                                                 {
+                                             // create new stream for each message
+                                             auto search = appToStreamID.find(message);
+                                             quic::StreamId streamId;
+                                             if (appToStreamID.end() != search)
+                                             {
+                                                 streamId = search->second;
+                                                 LOG(INFO) << "Use old stream=" << streamId << " is bi :" << mQuicClient->isBidirectionalStream(streamId);
+                                             }
+                                             else
+                                             {
+                                                 LOG(INFO) << "Use new stream ";
+                                                 streamId = mQuicClient->createBidirectionalStream().value();
+                                                 appToStreamID[message] = streamId;
+                                                 mQuicClient->setReadCallback(streamId, this);
+                                             }
+
+                                             sendMessage2(streamId, message); });
+            }
+        }//end while
+        mQuicClient->closeGracefully();
+        break;
+    }
+    case TESTTYPE::STARTFIRECLOSE:
+    {   
+        //send "hello from client"
+        //wait for the response
+        //close the connection
+        break;
+    }
+    case TESTTYPE::STARTLOOPCLOSE:
+    {
+        //send wait send close
+        break;
+    }
+    case TESTTYPE::STARTDOWNLOADCLOSE:
+    {
+        //send start download
+        //possible to start several loops? 
+        break;
+    }
+    case TESTTYPE::STARTFIREDOWNLOADCLOSE:
+    {
+        //we need to streams 
+        //one for seinding data 
+        //one for looping the data 
+        break;
+    }
+    default:
+        break;
+    }
+
+    LOG(INFO) << "EchoClient stopping client";
 }
