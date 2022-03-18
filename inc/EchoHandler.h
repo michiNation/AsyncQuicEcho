@@ -16,19 +16,19 @@ class EchoHandler : public quic::QuicSocket::ConnectionCallback,
   }
 
   void onNewBidirectionalStream(quic::StreamId id) noexcept override {
-    LOG(INFO) << "Got bidirectional stream id=" << id;
+/*     LOG(INFO) << "Got bidirectional stream id=" << id; */
     sock->setReadCallback(id, this);
   }
 
   void onNewUnidirectionalStream(quic::StreamId id) noexcept override {
-    LOG(INFO) << "Got unidirectional stream id=" << id;
+/*     LOG(INFO) << "Got unidirectional stream id=" << id; */
     sock->setReadCallback(id, this);
   }
 
   void onStopSending(
       quic::StreamId id,
       quic::ApplicationErrorCode error) noexcept override {
-    LOG(INFO) << "Got StopSending stream id=" << id << " error=" << error;
+ /*    LOG(INFO) << "Got StopSending stream id=" << id << " error=" << error; */
   }
 
   void onConnectionEnd() noexcept override {
@@ -52,7 +52,7 @@ class EchoHandler : public quic::QuicSocket::ConnectionCallback,
   }
 
   void readAvailable(quic::StreamId id) noexcept override {
-    LOG(INFO) << "read available for stream id=" << id;
+   /*  LOG(INFO) << "read available for stream id=" << id; */
 
     auto res = sock->read(id, 0);
     if (res.hasError()) {
@@ -65,16 +65,16 @@ class EchoHandler : public quic::QuicSocket::ConnectionCallback,
     quic::Buf data = std::move(res.value().first);
     bool eof = res.value().second;
     auto dataLen = (data ? data->computeChainDataLength() : 0);
-    LOG(INFO) << "Got len=" << dataLen << " eof=" << uint32_t(eof)
+   /*  LOG(INFO) << "Got len=" << dataLen << " eof=" << uint32_t(eof)
               << " total=" << input_[id].first.chainLength() + dataLen
               << " data="
               << ((data) ? data->clone()->moveToFbString().toStdString()
-                         : std::string());
+                         : std::string()); */
     input_[id].first.append(std::move(data));
     input_[id].second = eof;
-    if (eof) {
+    //if (eof) {
       echo(id, input_[id]);
-    }
+    //}
   }
 
   void readError(
@@ -89,13 +89,13 @@ class EchoHandler : public quic::QuicSocket::ConnectionCallback,
   }
 
   void echo(quic::StreamId id, StreamData& data) {
-    if (!data.second) {
+/*     if (!data.second) {
       // only echo when eof is present
       return;
-    }
+    } */
     auto echoedData = folly::IOBuf::copyBuffer("echo ");
     echoedData->prependChain(data.first.move());
-    auto res = sock->writeChain(id, std::move(echoedData), true, nullptr);
+    auto res = sock->writeChain(id, std::move(echoedData), false, nullptr); // no EOF because we need stream 17.03.22
     if (res.hasError()) {
       LOG(ERROR) << "write error=" << quic::toString(res.error());
     } else {
@@ -106,7 +106,7 @@ class EchoHandler : public quic::QuicSocket::ConnectionCallback,
 
   void onStreamWriteReady(quic::StreamId id, uint64_t maxToSend) noexcept
       override {
-    LOG(INFO) << "socket is write ready with maxToSend=" << maxToSend;
+/*     LOG(INFO) << "socket is write ready with maxToSend=" << maxToSend; */
     echo(id, input_[id]);
   }
 

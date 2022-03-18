@@ -8,6 +8,7 @@
 #include <quic/samples/echo/LogQuicStats.h>
 #include <folly/io/async/ScopedEventBaseThread.h>
 #include "TypesAndHelpers.h"
+#include "StopWatch.h"
 
 class MyClient : public quic::QuicSocket::ConnectionCallback,
                  public quic::QuicSocket::ReadCallback,
@@ -46,7 +47,7 @@ public:
         std::pair<quic::QuicErrorCode, folly::Optional<folly::StringPiece>>
             error) noexcept override;
 
-    void start(std::string ip, uint16_t port, TESTTYPE testtype, uint16_t loops = 10);
+    void start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t instances = 1, uint16_t loops = 1);
     std::string getString();
 
     ~MyClient() override = default;
@@ -69,4 +70,20 @@ private:
     std::map<std::string, quic::StreamId> appToStreamID;
 
     folly::ScopedEventBaseThread networkThread{"EchoClientThread"};
+
+    std::mutex mutex;
+    bool isconnected = false;
+    std::mutex received;
+    bool isreceived = false;
+    quic::StreamId usecaseStream;
+    std::unique_ptr<StopWatch> sw = std::make_unique<StopWatch>();
+    TESTTYPE testType = TESTTYPE::KEYBOARD;
+    struct mutexBool{
+        std::mutex mutex;
+        bool isReceived = false;
+        Timepoint start = Timepoint();
+    };
+    std::map<quic::StreamId,mutexBool> streamMutexMap;
+
+    std::mutex mapMutex;
 };
