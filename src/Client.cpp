@@ -1,4 +1,3 @@
-
 #include "Client.h"
 #include "LogQuicStats.h"
 MyClient::MyClient() {}
@@ -7,8 +6,7 @@ MyClient::MyClient() {}
 
 void MyClient::readError(
     quic::StreamId streamId,
-    std::pair<quic::QuicErrorCode, folly::Optional<folly::StringPiece>>
-        error) noexcept
+    quic::QuicError error) noexcept
 {
 
     // A read error only terminates the ingress portion of the stream state.
@@ -42,7 +40,7 @@ void MyClient::onConnectionEnd() noexcept
     LOG_("OnConnectionEnd");
 }
 
-void MyClient::onConnectionSetupError(std::pair<quic::QuicErrorCode, std::string> error) noexcept
+void MyClient::onConnectionSetupError(quic::QuicError error) noexcept
 {
     LOG_("onConnectionSetupError");
     onConnectionError(std::move(error));
@@ -73,12 +71,12 @@ void MyClient::reConnect()
           
     mQuicClient->setTransportStatsCallback(
     std::make_shared<LogQuicStats>("client"));
-    mQuicClient->start(this); });
+    mQuicClient->start(this, this); });
 }
 
-void MyClient::onConnectionError(std::pair<quic::QuicErrorCode, std::string> error) noexcept
+void MyClient::onConnectionError(quic::QuicError error) noexcept
 {
-    LOG_("EchoClient error: " + toString(error.first) + "; errStr=" + error.second);
+   // LOG_("EchoClient error: " + toString(error.first) + "; errStr=" + error.second);
 
     mStartDone.post();
 }
@@ -96,9 +94,7 @@ void MyClient::onStreamWriteReady(quic::StreamId id, uint64_t maxToSend) noexcep
 }
 
 void MyClient::onStreamWriteError(
-    quic::StreamId id,
-    std::pair<quic::QuicErrorCode, folly::Optional<folly::StringPiece>>
-        error) noexcept
+    quic::StreamId id, quic::QuicError error) noexcept
 {
 
    LOG_("EchoClient write error with stream=" + std::to_string(id) + " error=" + toString(error));
@@ -167,7 +163,7 @@ void MyClient::setUpConnection()
           std::make_shared<LogQuicStats>("client"));
 
     LOG_("EchoClient connecting to " + addr.describe());
-      mQuicClient->start(this); });
+      mQuicClient->start(this, this); });
 }
 
 void MyClient::readAvailable(quic::StreamId streamId) noexcept
@@ -251,7 +247,7 @@ void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t i
       mQuicClient->setTransportStatsCallback(
           std::make_shared<LogQuicStats>("client"));
       
-      mQuicClient->start(this); });
+      mQuicClient->start(this, this); });
 
     mStartDone.wait();
     this->testType = testtype;

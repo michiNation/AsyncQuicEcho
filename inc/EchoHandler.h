@@ -3,10 +3,11 @@
 #include <folly/io/async/EventBase.h>
 #include <quic/common/BufUtil.h>
 
-class EchoHandler : public quic::QuicSocket::ConnectionCallback,
+class EchoHandler : public quic::QuicSocket::ConnectionSetupCallback,
+                    public quic::QuicSocket::ConnectionCallback,
                     public quic::QuicSocket::ReadCallback,
                     public quic::QuicSocket::WriteCallback {
- public:
+ public: 
   using StreamData = std::pair<quic::BufQueue, bool>;
 
   explicit EchoHandler(folly::EventBase* evbIn) : evb(evbIn) {}
@@ -36,15 +37,13 @@ class EchoHandler : public quic::QuicSocket::ConnectionCallback,
   }
 
   
-  void onConnectionSetupError(
-      std::pair<quic::QuicErrorCode, std::string> error) noexcept override {
+  void onConnectionSetupError(quic::QuicError error) noexcept override {
     onConnectionError(std::move(error));
   }
 
-  void onConnectionError(
-      std::pair<quic::QuicErrorCode, std::string> error) noexcept override {
-    LOG(ERROR) << "Socket error=" << toString(error.first) << " "
-               << error.second;
+ void onConnectionError(quic::QuicError error) noexcept override {
+    LOG(ERROR) << "Socket error=" << toString(error.code) << " "
+               << error.message;
   }
 
   void onTransportReady() noexcept override {
@@ -77,12 +76,9 @@ class EchoHandler : public quic::QuicSocket::ConnectionCallback,
     //}
   }
 
-  void readError(
-      quic::StreamId id,
-      std::pair<quic::QuicErrorCode, folly::Optional<folly::StringPiece>>
-          error) noexcept override {
+   void readError(quic::StreamId id, quic::QuicError error) noexcept override {
     LOG(ERROR) << "Got read error on stream=" << id
-               << " error=" << quic::toString(error);
+               << " error=" << toString(error);
     // A read error only terminates the ingress portion of the stream state.
     // Your application should probably terminate the egress portion via
     // resetStream
@@ -110,12 +106,10 @@ class EchoHandler : public quic::QuicSocket::ConnectionCallback,
     echo(id, input_[id]);
   }
 
-  void onStreamWriteError(
-      quic::StreamId id,
-      std::pair<quic::QuicErrorCode, folly::Optional<folly::StringPiece>>
-          error) noexcept override {
+  void onStreamWriteError(quic::StreamId id, quic::QuicError error) noexcept
+      override {
     LOG(ERROR) << "write error with stream=" << id
-               << " error=" << quic::toString(error);
+               << " error=" << toString(error);
   }
 
   folly::EventBase* getEventBase() {

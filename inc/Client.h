@@ -10,7 +10,8 @@
 #include "TypesAndHelpers.h"
 #include "StopWatch.h"
 
-class MyClient : public quic::QuicSocket::ConnectionCallback,
+class MyClient : public quic::QuicSocket::ConnectionSetupCallback, 
+                 public quic::QuicSocket::ConnectionCallback,
                  public quic::QuicSocket::ReadCallback,
                  public quic::QuicSocket::WriteCallback
 {
@@ -21,8 +22,7 @@ public:
 
     void readError(
         quic::StreamId streamId,
-        std::pair<quic::QuicErrorCode, folly::Optional<folly::StringPiece>>
-            error) noexcept override;
+        quic::QuicError error) noexcept override;
 
     void onNewBidirectionalStream(quic::StreamId id) noexcept override;
 
@@ -34,18 +34,16 @@ public:
 
     void onConnectionEnd() noexcept override;
 
-    void onConnectionSetupError(std::pair<quic::QuicErrorCode, std::string> error) noexcept override;
+    void onConnectionSetupError(quic::QuicError error) noexcept override;
 
-    void onConnectionError(std::pair<quic::QuicErrorCode, std::string> error) noexcept override;
+    void onConnectionError(quic::QuicError error) noexcept override;
 
     void onTransportReady() noexcept override;
 
     void onStreamWriteReady(quic::StreamId id, uint64_t maxToSend) noexcept;
 
     void onStreamWriteError(
-        quic::StreamId id,
-        std::pair<quic::QuicErrorCode, folly::Optional<folly::StringPiece>>
-            error) noexcept override;
+        quic::StreamId id,quic::QuicError error) noexcept override;
 
     void start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t instances = 1, uint16_t loops = 1);
     std::string getString();

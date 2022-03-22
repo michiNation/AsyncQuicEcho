@@ -1,10 +1,17 @@
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 #pragma once
 
 #include <glog/logging.h>
+#include <quic/QuicConstants.h>
+#include <quic/QuicException.h>
 #include <quic/codec/Types.h>
 #include <quic/state/QuicTransportStatsCallback.h>
-#include "quic/QuicConstants.h"
-#include "quic/QuicException.h"
 
 class LogQuicStats : public quic::QuicTransportStatsCallback {
  public:
@@ -30,6 +37,10 @@ class LogQuicStats : public quic::QuicTransportStatsCallback {
 
   void onPacketSent() override {
     VLOG(2) << prefix_ << "onPacketSent";
+  }
+
+  void onDSRPacketSent(size_t pktSize) override {
+    VLOG(2) << prefix_ << "onDSRPacketSent size=" << pktSize;
   }
 
   void onPacketRetransmission() override {
@@ -92,8 +103,12 @@ class LogQuicStats : public quic::QuicTransportStatsCallback {
 
   void onConnectionClose(
       folly::Optional<quic::QuicErrorCode> code = folly::none) override {
-    VLOG(2) << prefix_ << "onConnectionClose reason="
-            << quic::toString(code.value_or(quic::LocalErrorCode::NO_ERROR));
+   /*  VLOG(2) << prefix_ << "onConnectionClose reason="
+            << quic::toString(code.value_or(quic::LocalErrorCode::NO_ERROR)); */
+  }
+
+  void onConnectionCloseZeroBytesWritten() override {
+    VLOG(2) << prefix_ << "onConnectionCloseZeroBytesWritten";
   }
 
   // stream level metrics
@@ -174,14 +189,14 @@ class LogQuicStats : public quic::QuicTransportStatsCallback {
     VLOG(2) << prefix_ << "onConnectionPMTUUpperBoundDetected";
   }
 
-  void onTransportKnobApplied(TransportKnobType knobType) override {
+  void onTransportKnobApplied(quic::TransportKnobParamId knobType) override {
     VLOG(2) << prefix_
-            << "onTransportKnobApplied knobType=" << toString(knobType);
+            << "onTransportKnobApplied knobType=" << knobType._to_string();
   }
 
-  void onTransportKnobError(TransportKnobType knobType) override {
+  void onTransportKnobError(quic::TransportKnobParamId knobType) override {
     VLOG(2) << prefix_
-            << "onTransportKnboError knobType=" << toString(knobType);
+            << "onTransportKnboError knobType=" << knobType._to_string();
   }
 
   void onServerUnfinishedHandshake() override {
@@ -220,6 +235,14 @@ class LogQuicStats : public quic::QuicTransportStatsCallback {
     VLOG(2) << prefix_ << "onDatagramDroppedOnRead";
   }
 
+  void onShortHeaderPadding(size_t padSize) override {
+    VLOG(2) << prefix_ << "onShortHeaderPadding size=" << padSize;
+  }
+
+  void onPacerTimerLagged() override {
+    VLOG(2) << prefix_ << __func__;
+  }
+
  private:
   std::string prefix_;
 };
@@ -232,3 +255,4 @@ class LogQuicStatsFactory : public quic::QuicTransportStatsCallbackFactory {
     return std::make_unique<LogQuicStats>("server");
   }
 };
+
