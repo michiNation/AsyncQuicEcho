@@ -31,7 +31,7 @@ int main(int argc, char* argv[]){
     std::string mode = argv[3];
     
     if(mode.compare("client") == 0){
-        MyClient myclient;   
+/*         MyClient myclient;   
         if(argc > 6){
             myclient.start(argv[1], atoi(argv[2]), getTestTypeFromInt(atoi(argv[4])), atoi(argv[5]),atoi(argv[6]));
         }
@@ -40,12 +40,12 @@ int main(int argc, char* argv[]){
         }
         else if (argc == 5){
             myclient.start(argv[1], static_cast<uint16_t>(atoi(argv[2])), getTestTypeFromInt(atoi(argv[4])));
-        }
+        } */
         
     }
     else if(mode.compare("server") == 0){
-        EchoServer echoServer{argv[1],static_cast<uint16_t>(atoi(argv[2]))};
-        echoServer.start(); 
+       // EchoServer echoServer{argv[1],static_cast<uint16_t>(atoi(argv[2]))};
+       // echoServer.start(); 
     } 
     return 0;
 }

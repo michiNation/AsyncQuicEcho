@@ -41,9 +41,14 @@ find_package(gflags REQUIRED)
 find_package(Glog REQUIRED)
 
 add_executable(AsyncQuic src/main.cpp src/Client.cpp src/Server.cpp)
+#add_executable(AsyncQuic src/main.cpp src/Client.cpp)
+#add_executable(AsyncQuic src/main.cpp src/Server.cpp)
+#add_executable(AsyncQuic src/main.cpp)
+
+
 
 set(LIBS  
-            /home/michael/quic/mvfst/_build/deps/lib 
+            #/home/michael/quic/mvfst/_build/deps/lib 
             /home/michael/quic/mvfst/_build/build/quic/common/test/libmvfst_test_utils.a 
             /home/michael/quic/mvfst/_build/deps/lib/libgmock_main.a 
             /home/michael/quic/mvfst/_build/deps/lib/libgmock.a 
