@@ -24,10 +24,11 @@ static void waitFor(std::function<bool(void)> waitForTrue, int sleepms, int time
         }
        // std::cout << "next round" << std::endl;
     }
-}
+};
+
 static void Sleep(int sleepms){
     std::this_thread::sleep_for(std::chrono::milliseconds(sleepms));
-}
+};
 
 enum TESTTYPE {
     KEYBOARD = 0,

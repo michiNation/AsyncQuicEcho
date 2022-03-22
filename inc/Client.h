@@ -61,6 +61,14 @@ private:
     void sendBytes(quic::StreamId id, quic::BufQueue data, bool eof);
     void sendMessage(quic::StreamId id, quic::BufQueue &data);
     void sendMessage2(quic::StreamId id, std::string string);
+
+    bool logging = true;
+    void LOG_(std::string logstring){
+        if(logging){
+            std::cout << logstring << std::endl;
+        }
+    };
+
     std::string mHost;
     uint16_t mPort;
     std::shared_ptr<quic::QuicClientTransport> mQuicClient;

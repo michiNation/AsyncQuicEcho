@@ -11,25 +11,22 @@ void MyClient::readError(
         error) noexcept
 {
 
-/*     LOG(ERROR) << "EchoClient failed read from stream=" << streamId
-               << ", error=" << quic::toString(error); */
     // A read error only terminates the ingress portion of the stream state.
     // Your application should probably terminate the egress portion via
     // resetStream
+    LOG_("readError");
     quic::ApplicationErrorCode errorcode;
     mQuicClient->resetStream(streamId, errorcode);
-/*     LOG(ERROR) << "Error after reset " << quic::toString(errorcode); */
 }
 
 void MyClient::onNewBidirectionalStream(quic::StreamId id) noexcept
 {
- /*    LOG(INFO) << "EchoClient: new bidirectional stream=" << id; */
+    LOG_("NewBidirectionalStream " + std::to_string(id));
     mQuicClient->setReadCallback(id, this);
 }
 
 void MyClient::onNewUnidirectionalStream(quic::StreamId id) noexcept
 {
-/*     LOG(INFO) << "EchoClient: new unidirectional stream=" << id; */
     mQuicClient->setReadCallback(id, this);
 }
 
@@ -37,21 +34,23 @@ void MyClient::onStopSending(
     quic::StreamId id,
     quic::ApplicationErrorCode /*error*/) noexcept
 {
-/*     VLOG(10) << "EchoClient got StopSending stream id=" << id; */
+    LOG_("Stop sending request " + std::to_string(id));
 }
 
 void MyClient::onConnectionEnd() noexcept
 {
-/*     LOG(INFO) << "EchoClient connection end"; */
+    LOG_("OnConnectionEnd");
 }
 
 void MyClient::onConnectionSetupError(std::pair<quic::QuicErrorCode, std::string> error) noexcept
 {
+    LOG_("onConnectionSetupError");
     onConnectionError(std::move(error));
 }
 
 void MyClient::reConnect()
 {
+    LOG_("reConnect");
     folly::SocketAddress addr(mHost.c_str(), mPort);
     auto evb = networkThread.getEventBase();
 
@@ -79,22 +78,20 @@ void MyClient::reConnect()
 
 void MyClient::onConnectionError(std::pair<quic::QuicErrorCode, std::string> error) noexcept
 {
-/*     LOG(ERROR) << "EchoClient error: " << toString(error.first)
-               << "; errStr=" << error.second; */
+    LOG_("EchoClient error: " + toString(error.first) + "; errStr=" + error.second);
 
     mStartDone.post();
 }
 
 void MyClient::onTransportReady() noexcept
 {
- /*    LOG(INFO) << "Transport is ready"; */
+    LOG_("Transport is ready");
     mStartDone.post();
 }
 
 void MyClient::onStreamWriteReady(quic::StreamId id, uint64_t maxToSend) noexcept
 {
-/*     LOG(INFO) << "EchoClient socket is write ready with maxToSend="
-              << maxToSend; */
+    LOG_("EchoClient socket is write ready with maxToSend=" + maxToSend); 
     sendMessage(id, mPendingOutput[id]);
 }
 
@@ -104,8 +101,7 @@ void MyClient::onStreamWriteError(
         error) noexcept
 {
 
-   /*  LOG(ERROR) << "EchoClient write error with stream=" << id
-               << " error=" << toString(error); */
+   LOG_("EchoClient write error with stream=" + std::to_string(id) + " error=" + toString(error));
 }
 
 std::string MyClient::getString()
@@ -119,7 +115,7 @@ void MyClient::sendMessage2(quic::StreamId id, std::string string)
 
     if (res.hasError())
     {
-      /*   LOG(ERROR) << "EchoClient writeChain error=" << uint32_t(res.error()); */
+      LOG_("EchoClient writeChain error=" + uint32_t(res.error()));
     }
     else
     {
@@ -133,17 +129,12 @@ void MyClient::sendMessage(quic::StreamId id, quic::BufQueue &data)
     auto res = mQuicClient->writeChain(id, message->clone(), true);
     auto str = message->moveToFbString().toStdString();
 
- /*    LOG(INFO) << "Receided " << str; */
     if (res.hasError())
     {
- /*        LOG(ERROR) << "EchoClient writeChain error=" << uint32_t(res.error()); */
+        LOG_("EchoClient writeChain error=" + uint32_t(res.error()));
     }
     else
     {
-        // auto str = message->moveToFbString().toStdString();
-/*         LOG(INFO) << "EchoClient wrote \"" << str << "\""
-                  << ", len=" << str.size() << " on stream=" << id; */
-        // sent whole message
         mPendingOutput[id].move();
     }
 }
@@ -175,7 +166,7 @@ void MyClient::setUpConnection()
       mQuicClient->setTransportStatsCallback(
           std::make_shared<LogQuicStats>("client"));
 
-      LOG(INFO) << "EchoClient connecting to " << addr.describe();
+    LOG_("EchoClient connecting to " + addr.describe());
       mQuicClient->start(this); });
 }
 
@@ -184,8 +175,7 @@ void MyClient::readAvailable(quic::StreamId streamId) noexcept
     auto readData = mQuicClient->read(streamId, 0);
     if (readData.hasError())
     {
-   /*      LOG(ERROR) << "EchoClient failed read from stream=" << streamId
-                   << ", error=" << (uint32_t)readData.error(); */
+        LOG_("EchoClient failed read from stream=" + std::to_string(streamId) + ", error=" + std::to_string((uint32_t)readData.error()));
     }
     auto copy = readData->first->clone();
     if (mRecvOffsets.find(streamId) == mRecvOffsets.end())
@@ -197,9 +187,6 @@ void MyClient::readAvailable(quic::StreamId streamId) noexcept
         mRecvOffsets[streamId] += copy->length();
     }
     std::string msg = copy->moveToFbString().toStdString();
-/*     LOG(INFO) << "Client received data=" << msg
-              << " on stream=" << streamId; */
-                  //check stream
     //then check usecase 
     switch (this->testType)
     {
@@ -263,8 +250,6 @@ void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t i
           
       mQuicClient->setTransportStatsCallback(
           std::make_shared<LogQuicStats>("client"));
-
-      /* LOG(INFO) << "EchoClient connecting to " << addr.describe(); */
       
       mQuicClient->start(this); });
 
