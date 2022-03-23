@@ -76,9 +76,9 @@ void MyClient::reConnect()
 
 void MyClient::onConnectionError(quic::QuicError error) noexcept
 {
-   // LOG_("EchoClient error: " + toString(error.first) + "; errStr=" + error.second);
+   LOG_("EchoClient error: " + error.message);
 
-    mStartDone.post();
+   mStartDone.post();
 }
 
 void MyClient::onTransportReady() noexcept
@@ -115,7 +115,7 @@ void MyClient::sendMessage2(quic::StreamId id, std::string string)
     }
     else
     {
-       /*  LOG(INFO) << "Sent " << string; */
+       LOG(INFO) << "Sent " << string;
     }
 }
 
@@ -196,7 +196,7 @@ void MyClient::readAvailable(quic::StreamId streamId) noexcept
             
             auto it = streamMutexMap.find(streamId);
             if(it != streamMutexMap.end()){
-                LOG(INFO) << "Read " << std::to_string(streamId);
+                LOG_("Read from Stream: " + std::to_string(streamId));
                 std::lock_guard<std::mutex> guard(it->second.mutex);
                 it->second.isReceived = true;
                 //sw->Stop();
@@ -220,7 +220,8 @@ void MyClient::readAvailable(quic::StreamId streamId) noexcept
 
 void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t instances ,uint16_t loops)
 {
-     sw->CreateFile(("QUICTest_" + sw->GetUtcString()) ,getStringfromTesttype(static_cast<int>(testtype)),"QUIC");
+    LOG_("Start: Port(" + std::to_string(port));
+    sw->CreateFile(("QUICTest_" + sw->GetUtcString()) ,getStringfromTesttype(static_cast<int>(testtype)),"QUIC");
     mHost = ip;
     mPort = port;
     // folly::ScopedEventBaseThread networkThread("EchoClientThread");
@@ -329,7 +330,7 @@ void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t i
                 sendMessage2(streamId, message);
                 waitFor([&](){
                 std::lock_guard<std::mutex> guard(mb.mutex);
-                return mb.isReceived;}, 10, 5000);
+                return mb.isReceived;}, 5, 5000);
                 x++;
                 {
                     std::lock_guard<std::mutex> guard(mb.mutex);
