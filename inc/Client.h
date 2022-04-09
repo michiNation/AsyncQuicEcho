@@ -9,6 +9,7 @@
 #include <folly/io/async/ScopedEventBaseThread.h>
 #include "TypesAndHelpers.h"
 #include "StopWatch.h"
+#include "FileAbstraction.h"
 
 class MyClient : public quic::QuicSocket::ConnectionSetupCallback, 
                  public quic::QuicSocket::ConnectionCallback,
@@ -70,8 +71,8 @@ private:
     std::string mHost;
     uint16_t mPort;
     std::shared_ptr<quic::QuicClientTransport> mQuicClient;
-    std::map<quic::StreamId, quic::BufQueue> mPendingOutput;
-    std::map<quic::StreamId, uint64_t> mRecvOffsets;
+    //std::map<quic::StreamId, quic::BufQueue> mPendingOutput;
+   // std::map<quic::StreamId, uint64_t> mRecvOffsets;
     folly::fibers::Baton mStartDone;
     std::map<std::string, quic::StreamId> appToStreamID;
 
@@ -92,4 +93,12 @@ private:
     std::map<quic::StreamId,mutexBool> streamMutexMap;
 
     std::mutex mapMutex;
+
+
+    //download stuff
+    uint32_t bytesReceived = 0;
+    uint32_t fileSize = 0;
+    bool finishedDownload = false;
+    bool startDownload = false;
+    std::unique_ptr<FileAbstraction> downloadFile;
 };

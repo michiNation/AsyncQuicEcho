@@ -22,6 +22,7 @@ EchoServer::EchoServer(const std::string& host, uint16_t port)
   }
 
   void EchoServer::start() {
+
     // Create a SocketAddress and the default or passed in host.
     folly::SocketAddress addr1(host_.c_str(), port_);
     addr1.setFromHostPort(host_, port_);

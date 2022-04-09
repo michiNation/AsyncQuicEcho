@@ -52,7 +52,7 @@ class EchoServer {
  public:
   explicit EchoServer(const std::string& host = "127.0.0.1", uint16_t port = 6666);
   void start();
-
+  std::unique_ptr<FileAbstraction> fa;
  private:
   std::string host_;
   uint16_t port_;

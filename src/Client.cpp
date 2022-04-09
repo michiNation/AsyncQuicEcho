@@ -1,5 +1,6 @@
 #include "Client.h"
 #include "LogQuicStats.h"
+
 MyClient::MyClient() {}
 
 
@@ -12,7 +13,7 @@ void MyClient::readError(
     // A read error only terminates the ingress portion of the stream state.
     // Your application should probably terminate the egress portion via
     // resetStream
-    LOG_("readError");
+    LOG_("readError" + error.message);
     quic::ApplicationErrorCode errorcode;
     mQuicClient->resetStream(streamId, errorcode);
 }
@@ -38,6 +39,7 @@ void MyClient::onStopSending(
 void MyClient::onConnectionEnd() noexcept
 {
     LOG_("OnConnectionEnd");
+    mStartDone.post();
 }
 
 void MyClient::onConnectionSetupError(quic::QuicError error) noexcept
@@ -67,6 +69,7 @@ void MyClient::reConnect()
       
 
     quic::TransportSettings settings;
+    
     mQuicClient->setTransportSettings(settings);
           
     mQuicClient->setTransportStatsCallback(
@@ -90,7 +93,7 @@ void MyClient::onTransportReady() noexcept
 void MyClient::onStreamWriteReady(quic::StreamId id, uint64_t maxToSend) noexcept
 {
     LOG_("EchoClient socket is write ready with maxToSend=" + maxToSend); 
-    sendMessage(id, mPendingOutput[id]);
+    //sendMessage(id, mPendingOutput[id]);
 }
 
 void MyClient::onStreamWriteError(
@@ -115,15 +118,15 @@ void MyClient::sendMessage2(quic::StreamId id, std::string string)
     }
     else
     {
-       LOG(INFO) << "Sent " << string;
+       // LOG(INFO) << "Sent " << string;
     }
 }
 
 void MyClient::sendMessage(quic::StreamId id, quic::BufQueue &data)
 {
     auto message = data.move();
-    auto res = mQuicClient->writeChain(id, message->clone(), true);
-    auto str = message->moveToFbString().toStdString();
+    auto res = mQuicClient->writeChain(id, message->clone(), false);
+    //auto str = message->moveToFbString().toStdString();
 
     if (res.hasError())
     {
@@ -131,7 +134,7 @@ void MyClient::sendMessage(quic::StreamId id, quic::BufQueue &data)
     }
     else
     {
-        mPendingOutput[id].move();
+        //mPendingOutput[id].move();
     }
 }
 
@@ -168,21 +171,17 @@ void MyClient::setUpConnection()
 
 void MyClient::readAvailable(quic::StreamId streamId) noexcept
 {
-    auto readData = mQuicClient->read(streamId, 0);
-    if (readData.hasError())
-    {
-        LOG_("EchoClient failed read from stream=" + std::to_string(streamId) + ", error=" + std::to_string((uint32_t)readData.error()));
-    }
-    auto copy = readData->first->clone();
-    if (mRecvOffsets.find(streamId) == mRecvOffsets.end())
-    {
-        mRecvOffsets[streamId] = copy->length();
-    }
-    else
-    {
-        mRecvOffsets[streamId] += copy->length();
-    }
-    std::string msg = copy->moveToFbString().toStdString();
+    //LOG_("Readavailability");
+    if(this->testType != TESTTYPE::STARTDOWNLOADCLOSE){
+        auto readData = mQuicClient->read(streamId, 0);
+        if (readData.hasError())
+        {
+            LOG_("EchoClient failed read from stream=" + std::to_string(streamId) + ", error=" + std::to_string((uint32_t)readData.error()));
+        }
+        auto copy = readData->first->clone();
+        std::string msg = copy->moveToFbString().toStdString();
+        //LOG_("Received: " + msg);
+     }
     //then check usecase 
     switch (this->testType)
     {
@@ -196,18 +195,48 @@ void MyClient::readAvailable(quic::StreamId streamId) noexcept
             
             auto it = streamMutexMap.find(streamId);
             if(it != streamMutexMap.end()){
-                LOG_("Read from Stream: " + std::to_string(streamId));
+                //LOG_("Read from Stream: " + std::to_string(streamId));
                 std::lock_guard<std::mutex> guard(it->second.mutex);
                 it->second.isReceived = true;
-                //sw->Stop();
-                sw->CreateLogEntry("RTT", ("StartFireClose" + std::to_string(streamId)),it->second.start,sw->getCurrentTime());
+                sw->CreateLogEntry("RTT-QUIC", ("StartFireClose-" + std::to_string(streamId)),it->second.start,sw->getCurrentTime());
             }
             break;
         }
-          case TESTTYPE::STARTDOWNLOADCLOSE:
+        case TESTTYPE::STARTDOWNLOADCLOSE:
         {
-            break;
-            
+            if(!startDownload){
+                LOG_("Read 9 bytes");
+                auto readData = mQuicClient->read(streamId, 9);
+                auto copy = readData->first->clone();
+                const uint8_t *buf = copy->data();
+                std::string str(&buf[0],&buf[9]);
+                std::cout << str << std::endl;
+                fileSize = std::stoi(str);
+                LOG_("Start Download - Filesize: " + std::to_string(fileSize) + " Received Bytes: " + std::to_string(copy->length()));
+                downloadFile = std::make_unique<FileAbstraction>(false);
+                downloadFile->LodeFile("../Files/Files_1/VideoFileDownload.MOV");
+                //downloadFile->LodeFile("../Files/Files_1/BigFile1GBdw.zip");
+                startDownload = true;
+                sw->ReceivedEvent("StartDownload");
+            }else{
+                
+                auto readData = mQuicClient->read(streamId, 0);
+                auto copy = readData->first->clone();
+
+                LOG_("Next Chunk of: " + std::to_string(copy->length()) + " Bytessum: " + std::to_string(bytesReceived));
+                bytesReceived += copy->length();
+                downloadFile->WriteBytes((const char*)copy->data(), copy->length());
+                LOG_("Written to file");
+            }
+
+            if(bytesReceived >= fileSize){
+                std::lock_guard<std::mutex> guard(mutex);
+                finishedDownload = true;
+                LOG_("Finished Download. Bytessum: " + std::to_string(bytesReceived));
+                sw->Stop();
+                sw->CreateLogEntry("RTT-QUIC", "Downloaded");
+            }
+            return;
         }
           case TESTTYPE::STARTFIREDOWNLOADCLOSE:
         {
@@ -215,12 +244,12 @@ void MyClient::readAvailable(quic::StreamId streamId) noexcept
             
         }
     }
-     sw->ReceivedEvent((msg + std::to_string(streamId)));
+    // sw->ReceivedEvent((msg + std::to_string(streamId)));
 }
 
 void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t instances ,uint16_t loops)
 {
-    LOG_("Start: Port(" + std::to_string(port));
+    LOG_("Start: Port(" + std::to_string(port) +")");
     sw->CreateFile(("QUICTest_" + sw->GetUtcString()) ,getStringfromTesttype(static_cast<int>(testtype)),"QUIC");
     mHost = ip;
     mPort = port;
@@ -243,13 +272,14 @@ void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t i
       
 
       quic::TransportSettings settings;
+      //settings.dataPathType = quic::DataPathType::ContinuousMemory;
+      //settings.attemptEarlyData = true;
       mQuicClient->setTransportSettings(settings);
           
       mQuicClient->setTransportStatsCallback(
           std::make_shared<LogQuicStats>("client"));
       
-      mQuicClient->start(this, this); });
-
+    mQuicClient->start(this, this); });
     mStartDone.wait();
     this->testType = testtype;
     switch (testtype)
@@ -302,6 +332,7 @@ void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t i
                                              sendMessage2(streamId, message); });
             }
         }//end while
+
         mQuicClient->closeGracefully();
         break;
     }
@@ -314,17 +345,17 @@ void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t i
         //close the connection
         std::string message = "HelloFromClient";
         auto func = [&](){
-            quic::StreamId streamId;          
-            /* LOG(INFO) << "Use new stream "; */
+            quic::StreamId streamId;       
+            streamId = mQuicClient->createBidirectionalStream().value();     
+            mQuicClient->setReadCallback(streamId, this);
             {
                 std::lock_guard<std::mutex> guard(mapMutex);
-                streamId = mQuicClient->createBidirectionalStream().value();  
                 streamMutexMap[streamId]; //using default constructor of mutexBool struct
             }
+
             int x = 0;
             while(x < loops){
                 auto& mb = streamMutexMap[streamId];
-                mQuicClient->setReadCallback(streamId, this);
                 sw->SendEvent(message + std::to_string(streamId));
                 mb.start = sw->getCurrentTime();
                 sendMessage2(streamId, message);
@@ -340,7 +371,6 @@ void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t i
         };
         std::vector<std::thread> threads;
         for(int i = 0; i < instances; i++){
-            LOG(INFO) << "new thread " << i;
             threads.push_back(std::thread(func));
         }
         for (std::thread & th : threads)
@@ -348,14 +378,27 @@ void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t i
             // If thread Object is Joinable then Join that thread.
             if (th.joinable())
                 th.join();
-        }                    
-        mQuicClient->closeGracefully();
+        }         
+        mQuicClient->closeGracefully(); 
         break;
     }
     case TESTTYPE::STARTDOWNLOADCLOSE:
     {
-        //send start download
-        //possible to start several loops? 
+        sw->Start();
+        sw->SendEvent("StartDownload");
+        quic::StreamId streamId;          
+        streamId = mQuicClient->createBidirectionalStream().value();  
+        mQuicClient->setReadCallback(streamId, this);
+        LOG_("Send start Download");
+        sendMessage2(streamId, "Download");
+        LOG_("Wait...");
+        waitFor([=](){
+            std::lock_guard<std::mutex> guard(mutex);
+            return finishedDownload;}, 100, (1000 * 60 * 30)); //timeout 30 min
+
+        mQuicClient->closeGracefully();
+        downloadFile->CloseFile();
+        LOG_("Done...");
         break;
     }
     case TESTTYPE::STARTFIREDOWNLOADCLOSE:
