@@ -41,7 +41,7 @@ public:
             this->protocol = protocol;
             stream.open(filename);
             stream << "Start of Testrun: " << testrun << " Start at: " << GetUtcString() << std::endl;
-            stream << "UTC,Event,message" << std::endl;
+            stream << "EpochMs,Event,message" << std::endl;
         }
 
         {
@@ -49,7 +49,7 @@ public:
             std::lock_guard<std::mutex> guard(lock_2);
             steam_2.open(filename + "RTT");
             steam_2 << "Start of Testrun: " << testrun << " Start at: " << GetUtcString() << std::endl;
-            steam_2 << "UTC,Event,RTT,Usecase" << std::endl;
+            steam_2 << "EpochMs,Event,RTT,Usecase" << std::endl;
         }
 
     }
@@ -67,9 +67,9 @@ public:
         }
     }
 
-    static std::chrono::milliseconds::rep getCurrentTimeMicroSec(){
+     static std::chrono::milliseconds::rep getCurrentTimeMicroSec(){
         return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
-    }
+    } 
 
     static std::chrono::milliseconds::rep getCurrentTimeMs(){
         return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
@@ -91,34 +91,37 @@ public:
     static std::chrono::milliseconds::rep getTimeDifMicroSec(Timepoint start, Timepoint stop){
         return std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
     }
+    static std::chrono::milliseconds::rep getTimeDifMilliSec(Timepoint start, Timepoint stop){
+        return std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
+    }
 
     void CreateLogEntry(std::string eventstr, std::string message, Timepoint start, Timepoint stop){
         std::lock_guard<std::mutex> guard(lock_2);
-        steam_2 << GetUtcString() << "," << eventstr << "," << getTimeDifMicroSec(start, stop) << "," << message << std::endl;
+        steam_2 << getCurrentTimeMs() << "," << eventstr << "," << getTimeDifMilliSec(start, stop) << "," << message << std::endl;
     }
 
     void CreateLogEntry(std::string eventstr, std::string message){
         std::lock_guard<std::mutex> guard(lock_2);
-        steam_2  << GetUtcString() << "," << eventstr << "," << getTimeDifMicroSec(this->start, this->stop) << "," << message << std::endl;
+        steam_2  << getCurrentTimeMs() << "," << eventstr << "," << getTimeDifMilliSec(this->start, this->stop) << "," << message << std::endl;
     }
 
     void ConnectedEvent(std::string message = ""){
         std::lock_guard<std::mutex> guard(lock);
-        stream << GetUtcString() << ",Connected," << message << std::endl;
+        stream << getCurrentTimeMs() << ",Connected," << message << std::endl;
     }
 
     void DisconnectedEvent(std::string message = ""){
         std::lock_guard<std::mutex> guard(lock);
-        stream << GetUtcString() << ",Disconnected," << message << std::endl;
+        stream << getCurrentTimeMs() << ",Disconnected," << message << std::endl;
     }
 
     void SendEvent(std::string message = ""){
         std::lock_guard<std::mutex> guard(lock);
-        stream << GetUtcString() << ",Send," << message << std::endl;
+        stream << getCurrentTimeMs() << ",Send," << message << std::endl;
     }
 
     void ReceivedEvent(std::string message = "null"){
         std::lock_guard<std::mutex> guard(lock);
-        stream << GetUtcString() << ",Received," << message << std::endl;
+        stream << getCurrentTimeMs() << ",Received," << message << std::endl;
     }
 };

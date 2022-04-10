@@ -14,10 +14,7 @@ class EchoHandler : public quic::QuicSocket::ConnectionSetupCallback,
 
 
   explicit EchoHandler(folly::EventBase* evbIn) : evb(evbIn) {
-/*     //fa->LodeFile("../Files/Files_1/video.MOV");
-    std::cout << "Start EchoHandler" << std::endl;
-    fa->LodeFile("../Files/Files_1/BigFile1GB.zip");
-    std::cout << "File Loaded" << std::endl; */
+    std::cout << fa->GetFileSize() << std::endl; 
   }
 
   void setQuicSocket(std::shared_ptr<quic::QuicSocket> socket) {
@@ -160,11 +157,7 @@ class EchoHandler : public quic::QuicSocket::ConnectionSetupCallback,
   }
 
    void readError(quic::StreamId id, quic::QuicError error) noexcept override {
-    LOG(ERROR) << "Got read error on stream=" << id
-               << " error=" << toString(error);
-    // A read error only terminates the ingress portion of the stream state.
-    // Your application should probably terminate the egress portion via
-    // resetStream
+    std::cout << "ReadError: " << error.message() << std::endl;
   }
 
 
@@ -172,13 +165,14 @@ class EchoHandler : public quic::QuicSocket::ConnectionSetupCallback,
   void onStreamWriteReady(quic::StreamId id, uint64_t maxToSend) noexcept
       override {
 /*     LOG(INFO) << "socket is write ready with maxToSend=" << maxToSend; */
-    echo(id, input_[id]);
+   // echo(id, input_[id]);
   }
 
   void onStreamWriteError(quic::StreamId id, quic::QuicError error) noexcept
       override {
-    LOG(ERROR) << "write error with stream=" << id
-               << " error=" << toString(error);
+   
+    //LOG(ERROR) << "write error with stream=" << id
+    //           << " error=" << toString(error);
   }
 
   folly::EventBase* getEventBase() {

@@ -6,19 +6,19 @@ class FileAbstraction {
 
 private:
 
-std::ifstream inStream;
-int64_t inStreamBytes = 0;
+static std::ifstream inStream;
+static int64_t inStreamBytes;
 
-std::ofstream ofStream;
-int64_t ofStreamBytesWritten = 0;
+static std::ofstream ofStream;
+static int64_t ofStreamBytesWritten;
 
-bool isInstreamFile{false};
+static bool isInstreamFile;
 public:
     FileAbstraction(bool IwantToReadaFile){
         this->isInstreamFile = IwantToReadaFile;
     }
 
-    void LodeFile(std::string path){
+    static void LodeFile(std::string path){
         if(isInstreamFile){
             inStream.open(path);
             inStream.ignore( std::numeric_limits<std::streamsize>::max() );
@@ -32,7 +32,7 @@ public:
         }
     }
 
-    void CloseFile(){
+    static void CloseFile(){
         if(isInstreamFile){
             if(inStream.is_open()){
                 inStream.close();
@@ -45,7 +45,7 @@ public:
         }
     }
 
-    void WriteBytes(std::vector<uint8_t>& bytes){
+    static void WriteBytes(std::vector<uint8_t>& bytes){
         if(!isInstreamFile){
             if(ofStream.is_open()){
                 ofStreamBytesWritten+= bytes.size();
@@ -55,7 +55,7 @@ public:
     }
 
 
-    void WriteBytes(const char * bytes, int size){
+    static void WriteBytes(const char * bytes, int size){
         if(!isInstreamFile){
             if(ofStream.is_open()){
                 ofStream.write(bytes, size);        
@@ -63,7 +63,7 @@ public:
         }
     }
 
-    std::vector<uint8_t> ReadBytes(uint length){
+    static std::vector<uint8_t> ReadBytes(uint length){
         std::vector<uint8_t> v(length);
         if(isInstreamFile && inStream.is_open()){
             inStream.read((char*)&v[0],length);
@@ -71,7 +71,7 @@ public:
         return v;
     }
 
-    auto GetFileSize(){
+    static auto GetFileSize(){
         if(isInstreamFile){
             return inStreamBytes;
         }else{
@@ -80,3 +80,9 @@ public:
     }
 
 };
+
+ std::ifstream FileAbstraction::inStream;
+ int64_t FileAbstraction::inStreamBytes = 0;
+ std::ofstream FileAbstraction::ofStream;
+ int64_t FileAbstraction::ofStreamBytesWritten = 0;
+ bool FileAbstraction::isInstreamFile{false};

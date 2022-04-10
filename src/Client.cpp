@@ -15,12 +15,14 @@ void MyClient::readError(
     // resetStream
     LOG_("readError" + error.message);
     quic::ApplicationErrorCode errorcode;
+    sw->DisconnectedEvent("StreamReset: " + streamId);
     mQuicClient->resetStream(streamId, errorcode);
 }
 
 void MyClient::onNewBidirectionalStream(quic::StreamId id) noexcept
 {
     LOG_("NewBidirectionalStream " + std::to_string(id));
+    sw->ConnectedEvent("NewSteam: " + id);
     mQuicClient->setReadCallback(id, this);
 }
 
@@ -39,6 +41,7 @@ void MyClient::onStopSending(
 void MyClient::onConnectionEnd() noexcept
 {
     LOG_("OnConnectionEnd");
+    sw->DisconnectedEvent("Disconnected");
     mStartDone.post();
 }
 
@@ -80,7 +83,6 @@ void MyClient::reConnect()
 void MyClient::onConnectionError(quic::QuicError error) noexcept
 {
    LOG_("EchoClient error: " + error.message);
-
    mStartDone.post();
 }
 
@@ -244,7 +246,7 @@ void MyClient::readAvailable(quic::StreamId streamId) noexcept
             
         }
     }
-    // sw->ReceivedEvent((msg + std::to_string(streamId)));
+        sw->ReceivedEvent(("Received" + std::to_string(streamId)));
 }
 
 void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t instances ,uint16_t loops)
@@ -281,6 +283,7 @@ void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t i
       
     mQuicClient->start(this, this); });
     mStartDone.wait();
+    sw->ConnectedEvent("Connected");
     this->testType = testtype;
     switch (testtype)
     {
@@ -361,7 +364,7 @@ void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t i
                 sendMessage2(streamId, message);
                 waitFor([&](){
                 std::lock_guard<std::mutex> guard(mb.mutex);
-                return mb.isReceived;}, 5, 5000);
+                return mb.isReceived;}, 2, 5000);
                 x++;
                 {
                     std::lock_guard<std::mutex> guard(mb.mutex);
