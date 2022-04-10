@@ -200,7 +200,8 @@ void MyClient::readAvailable(quic::StreamId streamId) noexcept
                 //LOG_("Read from Stream: " + std::to_string(streamId));
                 std::lock_guard<std::mutex> guard(it->second.mutex);
                 it->second.isReceived = true;
-                sw->CreateLogEntry("RTT-QUIC", ("StartFireClose-" + std::to_string(streamId)),it->second.start,sw->getCurrentTime());
+                //sw->CreateLogEntry("RTT-QUIC-0PL", ("StartFireClose-" + std::to_string(streamId)),it->second.start,sw->getCurrentTime());
+                sw->CreateLogEntry("RTT-QUIC-5PL", ("StartFireClose-" + std::to_string(streamId)),it->second.start,sw->getCurrentTime());
             }
             break;
         }
@@ -280,7 +281,8 @@ void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t i
           
       mQuicClient->setTransportStatsCallback(
           std::make_shared<LogQuicStats>("client"));
-      
+    
+    sw->Connect();
     mQuicClient->start(this, this); });
     mStartDone.wait();
     sw->ConnectedEvent("Connected");
@@ -349,10 +351,11 @@ void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t i
         std::string message = "HelloFromClient";
         auto func = [&](){
             quic::StreamId streamId;       
-            streamId = mQuicClient->createBidirectionalStream().value();     
-            mQuicClient->setReadCallback(streamId, this);
+            
             {
                 std::lock_guard<std::mutex> guard(mapMutex);
+                streamId = mQuicClient->createBidirectionalStream().value();     
+                mQuicClient->setReadCallback(streamId, this);
                 streamMutexMap[streamId]; //using default constructor of mutexBool struct
             }
 
@@ -364,7 +367,7 @@ void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t i
                 sendMessage2(streamId, message);
                 waitFor([&](){
                 std::lock_guard<std::mutex> guard(mb.mutex);
-                return mb.isReceived;}, 2, 5000);
+                return mb.isReceived;}, 1, 5000);
                 x++;
                 {
                     std::lock_guard<std::mutex> guard(mb.mutex);
@@ -383,6 +386,8 @@ void MyClient::start(std::string ip, uint16_t port, TESTTYPE testtype,uint16_t i
                 th.join();
         }         
         mQuicClient->closeGracefully(); 
+        sw->Disconnect();
+        sw->CreateConnectionTrackingEntry("QUIC-StartStopConnection5%", "nothing");
         break;
     }
     case TESTTYPE::STARTDOWNLOADCLOSE:

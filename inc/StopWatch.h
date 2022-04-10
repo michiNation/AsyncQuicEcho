@@ -17,6 +17,10 @@ private:
     Timepoint start = Timepoint();
     Timepoint stop = Timepoint();
 
+    Timepoint connect = Timepoint();
+    Timepoint disconnect = Timepoint();
+
+
     //File 2
     std::ofstream steam_2;
 
@@ -88,6 +92,17 @@ public:
         this->stop = this->getCurrentTime();
     }
 
+    void Connect(){
+        std::lock_guard<std::mutex> guard(lock);
+        this->connect = this->getCurrentTime();
+    }
+    void Disconnect(){
+        std::lock_guard<std::mutex> guard(lock);
+        this->disconnect = this->getCurrentTime();
+    }
+
+
+
     static std::chrono::milliseconds::rep getTimeDifMicroSec(Timepoint start, Timepoint stop){
         return std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
     }
@@ -103,6 +118,11 @@ public:
     void CreateLogEntry(std::string eventstr, std::string message){
         std::lock_guard<std::mutex> guard(lock_2);
         steam_2  << getCurrentTimeMs() << "," << eventstr << "," << getTimeDifMilliSec(this->start, this->stop) << "," << message << std::endl;
+    }
+
+    void CreateConnectionTrackingEntry(std::string eventstr, std::string message){
+        std::lock_guard<std::mutex> guard(lock);
+        stream  << getCurrentTimeMs() << "," << eventstr << "," << getTimeDifMilliSec(this->connect, this->disconnect) << "," << message << std::endl;
     }
 
     void ConnectedEvent(std::string message = ""){

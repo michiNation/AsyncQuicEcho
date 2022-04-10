@@ -17,8 +17,7 @@ int main(int argc, char* argv[]){
 /*     google::InitGoogleLogging("MAIN");
     google::SetCommandLineOptionWithMode("logtostderr", "1", gflags::SET_FLAGS_DEFAULT);
     */
-    auto fa = FileAbstraction(true);
-    fa.LodeFile("../Files/Files_1/BigFile1GB.zip");
+
 
     //folly::Init init(&argc, &argv);
     fizz::CryptoUtils::init();
@@ -46,7 +45,9 @@ int main(int argc, char* argv[]){
         
     }
     else if(mode.compare("server") == 0){
-       EchoServer echoServer{argv[1],static_cast<uint16_t>(atoi(argv[2]))};
+        auto fa = FileAbstraction(true);
+        fa.LodeFile("../Files/Files_1/BigFile1GB.zip");
+        EchoServer echoServer{argv[1],static_cast<uint16_t>(atoi(argv[2]))};
         echoServer.start(); 
     } 
     return 0;
