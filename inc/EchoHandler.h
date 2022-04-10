@@ -157,7 +157,7 @@ class EchoHandler : public quic::QuicSocket::ConnectionSetupCallback,
   }
 
    void readError(quic::StreamId id, quic::QuicError error) noexcept override {
-    std::cout << "ReadError: " << error.message() << std::endl;
+    std::cout << "ReadError: " << id << std::endl;
   }
 
 

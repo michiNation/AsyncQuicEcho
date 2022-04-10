@@ -40,7 +40,7 @@ find_package(Fizz PATHS /home/michael/quic/mvfst/_build/deps/lib/cmake/fizz)
 find_package(gflags REQUIRED)
 find_package(Glog REQUIRED)
 
-add_executable(AsyncQuic src/main.cpp src/Client.cpp src/Server.cpp)
+add_executable(AsyncQuic src/main.cpp src/Client.cpp src/Server.cpp src/FileAbstraction.cpp)
 #add_executable(AsyncQuic src/main.cpp src/Client.cpp)
 #add_executable(AsyncQuic src/main.cpp src/Server.cpp)
 #add_executable(AsyncQuic src/main.cpp)
